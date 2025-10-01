@@ -40,6 +40,15 @@ snp_clean <- snp %>%
 head(snp_clean)
 
 unemp <- readr::read_csv(file.path(path, "unemployment.csv"))
+# Clean unemployment
+unemp_long <- unemp %>%
+              pivot_longer(cols = Jan:Dec, names_to = "month",
+              values_to = "unemployment_rate") %>%
+              mutate(year = as.integer(Year),
+              # Rename Jan/Feb/... to January/February/... for consistency
+              month = month.name[match(month, month.abb)]) %>%
+              select(year, month, unemployment_rate)
+head(unemp_long)
 ```
 
 ## Including Plots
