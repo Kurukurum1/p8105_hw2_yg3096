@@ -70,7 +70,7 @@ The three raw data contains the number of national politicians who are
 democratic or republican, Standard & Poor's stock market index (S&P) and rate of  
 unemployment by month. After merging these data set by year and month, dimension  
 of result is `r paste(dim(merged_all), collapse = " x ")`, year range is `range(merged_all$year, na.rm = TRUE)`.  
-Key variables contain `r paste(names(merged_all)[1:8], collapse=", ")`.  
+Key variables include `r paste(names(merged_all)[1:8], collapse=", ")`.  
 
 ## Problem 2
 ```{r}
@@ -78,8 +78,9 @@ Key variables contain `r paste(names(merged_all)[1:8], collapse=", ")`.
 path <- "data/tw.xlsx"
 # Read and clean Mr. Trash Wheel sheet, updated 
 mr <- read_excel(path, sheet = "Mr. Trash Wheel", skip = 1) %>%
-      janitor::clean_names() %>% # clean names
-      filter(!is.na(dumpster)) %>% # omit non-data rows
+      janitor::clean_names() %>% # Clean names
+      select(-starts_with("x")) %>% # Delete NA columns
+      filter(!is.na(dumpster)) %>% # Omit non-data rows
       # Round number of spotrs balls to nearest integer
       mutate(year = as.integer(year), 
              sports_balls = as.integer(round(sports_balls, 0)),
@@ -87,15 +88,29 @@ mr <- read_excel(path, sheet = "Mr. Trash Wheel", skip = 1) %>%
 
 # Read and clean Professor Trash Wheel sheet
 prof <- read_excel(path, sheet = "Professor Trash Wheel", skip = 1) %>%
-        janitor::clean_names() %>%
+        janitor::clean_names() %>% # Clean names
+        select(-starts_with("x")) %>% # Delete NA columns
         filter(!is.na(dumpster)) %>% 
-        mutate(year = as.integer(year))# No sports balls column in this sheet
+        # No sports balls column in this sheet
+        mutate(year = as.integer(year), wheel = "Professor Trash Wheel")
 
 # Read and clean Gwynnda Trash Wheel sheet
 gwynnda <- read_excel(path, sheet = "Gwynnda Trash Wheel", skip = 1) %>%
-           janitor::clean_names() %>%
+           janitor::clean_names() %>% # Clean names
+           select(-starts_with("x")) %>% # Delete NA columns
            filter(!is.na(dumpster)) %>% 
-           mutate(year = as.integer(year))# Also no sports balls column
+           # Also no sports balls column in this sheet
+           mutate(year = as.integer(year), wheel = "Gwynnda Trash Wheel")
 
 trash_all <- bind_rows(mr, prof, gwynnda)
 ```
+After cleaning and combining the three Trash Wheel datasets, the result dataset  
+contains `r nrow(trash_all)` observations. Key variables include `dumpster`  
+(the dumpster identifier), `weight_tons` (weight of trash collected),  
+`volume_cubic_yards` (volume of trash) and counts of specific items such as  
+`plastic_bottles`, `polystyrene` and `cigarette_butts`. For Mr. Trash Wheel,  
+the dataset also includes `sports_balls`, rounded to the nearest integer. Across   
+all years of available data, Professor Trash Wheel collected a total of
+`r sum(trash_all$weight_tons[trash_all$wheel == "Professor Trash Wheel"], na.rm = TRUE)`  
+tons of trash. In June of 2022, Gwynnda collected
+`r sum(trash_all$cigarette_butts[trash_all$wheel == "Gwynnda Trash Wheel" & trash_all$year == 2022 & trash_all$month == "June"], na.rm = TRUE)` cigarette butts.
