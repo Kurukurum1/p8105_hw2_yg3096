@@ -49,14 +49,29 @@ unemp_long <- unemp %>%
               month = month.name[match(month, month.abb)]) %>%
               select(year, month, unemployment_rate)
 head(unemp_long)
+
+# Merge snp into pols
+pols_snp <- pols_clean %>%
+            left_join(snp_clean, by = c("year", "month"))
+
+# Then merge into unemployment
+merged_all <- pols_snp %>%
+              left_join(unemp_long, by = c("year", "month"))
+
+# Check result
+dim(merged_all)
+range(merged_all$year, na.rm = TRUE)
+sum(is.na(merged_all$close)) # Check NA values in close column
+sum(is.na(merged_all$unemployment_rate)) # Check NA values in unemployment
 ```
+The three raw data contains the number of national politicians who are  
+democratic or republican, Standard & Poor's stock market index (S&P) and rate of  
+unemployment by month. After merging these data set by year and month, dimension  
+of result is `r paste(dim(merged_all), collapse = " x ")`, year range is `range(merged_all$year, na.rm = TRUE)`.  
+Key variables contain `r paste(names(merged_all)[1:8], collapse=", ")`.  
 
-## Including Plots
-
-You can also embed plots, for example:
-
+## Problem 2
 ```{r}
 
-```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```
