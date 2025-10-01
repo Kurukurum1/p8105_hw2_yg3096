@@ -12,26 +12,33 @@ library(lubridate)
 path <- "data/fivethirtyeight_datasets"
 ```
 
-## R Markdown
-
-
-
+## Problem 1
 ```{r}
 pols <- readr::read_csv(file.path(path, "pols-month.csv"))
 # Clean pols-month
 pols_clean <- pols %>%
-              # After checking the table, format of month is "YYYY-M-D"
-              separate(mon, into = c("year", "month", "day"), sep = "-", 
-                       fill = "right", extra = "drop") %>%
+              # After checking the table, format of mon is "YYYY-M-D"
+              separate(mon, into = c("year", "month", "day")) %>%
               mutate(year = as.integer(year), month = as.integer(month),
                      month = month.name[month], # Replace with month names
                      # After checking the table, there are no null values
                      president = case_when(prez_gop == 1 ~ "gop",
                                            prez_dem == 1 ~ "dem")) %>%
-              select(-prez_gop, -prez_dem, -day) %>%
-              arrange(year, match(month, month.name))
+              select(-prez_gop, -prez_dem, -day)
 head(pols_clean)
+
 snp  <- readr::read_csv(file.path(path, "snp.csv"))
+# Clean snp
+snp_clean <- snp %>%
+             # M-D-YY format
+             separate(date, into = c("month", "day", "year")) %>%
+             mutate(year = as.integer(year), 
+                    # Change 2-digit year format into 4-digit
+                    year = if_else(year < 50, year + 2000L, year + 1900L),
+                    month = as.integer(month), month = month.name[month]) %>%
+             select(year, month, close)
+head(snp_clean)
+
 unemp <- readr::read_csv(file.path(path, "unemployment.csv"))
 ```
 
@@ -39,8 +46,8 @@ unemp <- readr::read_csv(file.path(path, "unemployment.csv"))
 
 You can also embed plots, for example:
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
