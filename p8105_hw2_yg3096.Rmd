@@ -6,16 +6,33 @@ date: "2025-09-30"
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(readxl)
+library(lubridate)
+path <- "data/fivethirtyeight_datasets"
 ```
 
 ## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
-```{r cars}
-summary(cars)
+```{r}
+pols <- readr::read_csv(file.path(path, "pols-month.csv"))
+# Clean pols-month
+pols_clean <- pols %>%
+              # After checking the table, format of month is "YYYY-M-D"
+              separate(mon, into = c("year", "month", "day"), sep = "-", 
+                       fill = "right", extra = "drop") %>%
+              mutate(year = as.integer(year), month = as.integer(month),
+                     month = month.name[month], # Replace with month names
+                     # After checking the table, there are no null values
+                     president = case_when(prez_gop == 1 ~ "gop",
+                                           prez_dem == 1 ~ "dem")) %>%
+              select(-prez_gop, -prez_dem, -day) %>%
+              arrange(year, match(month, month.name))
+head(pols_clean)
+snp  <- readr::read_csv(file.path(path, "snp.csv"))
+unemp <- readr::read_csv(file.path(path, "unemployment.csv"))
 ```
 
 ## Including Plots
