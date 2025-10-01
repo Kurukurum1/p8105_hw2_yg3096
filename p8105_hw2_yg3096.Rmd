@@ -7,13 +7,15 @@ date: "2025-09-30"
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
-library(readxl)
 library(lubridate)
-path <- "data/fivethirtyeight_datasets"
+library(readxl)
+library(dplyr)
 ```
 
 ## Problem 1
 ```{r}
+# Set data path
+path <- "data/fivethirtyeight_datasets"
 pols <- readr::read_csv(file.path(path, "pols-month.csv"))
 # Clean pols-month
 pols_clean <- pols %>%
@@ -72,6 +74,28 @@ Key variables contain `r paste(names(merged_all)[1:8], collapse=", ")`.
 
 ## Problem 2
 ```{r}
+# Set data path
+path <- "data/tw.xlsx"
+# Read and clean Mr. Trash Wheel sheet, updated 
+mr <- read_excel(path, sheet = "Mr. Trash Wheel", skip = 1) %>%
+      janitor::clean_names() %>% # clean names
+      filter(!is.na(dumpster)) %>% # omit non-data rows
+      # Round number of spotrs balls to nearest integer
+      mutate(year = as.integer(year), 
+             sports_balls = as.integer(round(sports_balls, 0)),
+             wheel = "Mr. Trash Wheel")
 
+# Read and clean Professor Trash Wheel sheet
+prof <- read_excel(path, sheet = "Professor Trash Wheel", skip = 1) %>%
+        janitor::clean_names() %>%
+        filter(!is.na(dumpster)) %>% 
+        mutate(year = as.integer(year))# No sports balls column in this sheet
 
+# Read and clean Gwynnda Trash Wheel sheet
+gwynnda <- read_excel(path, sheet = "Gwynnda Trash Wheel", skip = 1) %>%
+           janitor::clean_names() %>%
+           filter(!is.na(dumpster)) %>% 
+           mutate(year = as.integer(year))# Also no sports balls column
+
+trash_all <- bind_rows(mr, prof, gwynnda)
 ```
